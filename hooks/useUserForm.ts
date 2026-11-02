@@ -3,31 +3,36 @@ import { useState } from "react";
 
 type UserFormData = {
     email: string;
-    fullName: string;
-    role: string;
+    nombre: string;
+    id_rol: number | "";
 };
 
 export default function useUserForm() {
     const [formData, setFormData] = useState<UserFormData>({
         email: "",
-        fullName: "",
-        role: "",
+        nombre: "",
+        id_rol: "",
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    const handleChange = (field: keyof UserFormData, value: string) => {
+    const handleChange = (field: keyof UserFormData, value: string | number) => {
         setFormData((prev) => ({
             ...prev,
             [field]: value,
+        }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [field]: "",
         }));
     };
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = "Por favor, complete este campo";
+        if (!formData.nombre.trim()) {
+            newErrors.nombre = "Por favor, complete este campo";
         }
 
         if (!formData.email.trim()) {
@@ -36,8 +41,8 @@ export default function useUserForm() {
             newErrors.email = "Formato de correo electrónico no válido";
         }
 
-        if (!formData.role) {
-            newErrors.role = "Por favor, seleccione un rol";
+        if (formData.id_rol === "") {
+            newErrors.id_rol = "Por favor, seleccione un rol";
         }
 
         setErrors(newErrors);

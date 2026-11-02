@@ -26,21 +26,50 @@ export default function UserForm() {
     const [successOpen, setSuccessOpen] = useState(false);
     const [temporaryPassword, setTemporaryPassword] = useState("");
     const [passwordCopied, setPasswordCopied] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
 
     const { formData, errors, handleChange, validateForm } = useUserForm();
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (validateForm()) {
-            console.log("Datos del usuario:", formData);
+        if (!validateForm()) return;
 
-            // Contraseña temporal provisoria para probar el diálogo
-            setTemporaryPassword("X7K9-P2LM");
+        setIsSubmitting(true);
+        setSubmitError("");
 
-            // Abrir el diálogo
+        try {
+            const response = await fetch("/api/users", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: formData.email.trim(),
+                    nombre: formData.nombre.trim(),
+                    id_rol: formData.id_rol,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || data.error || "No se pudo registrar el usuario.");
+            }
+
+            setTemporaryPassword(data.password);
             setPasswordCopied(false);
             setSuccessOpen(true);
+
+        } catch (error) {
+            setSubmitError(
+                error instanceof Error
+                    ? error.message
+                    : "Ocurrió un error al registrar el usuario."
+            );
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -142,6 +171,7 @@ export default function UserForm() {
                 {/* Campos */}
                 <Box
                     component="form"
+                    noValidate
                     onSubmit={handleSubmit}
                     sx={{
                         px: { xs: 2.5, md: 4 },
@@ -157,12 +187,11 @@ export default function UserForm() {
                         </Typography>
 
                         <TextField
-                            required
                             fullWidth
-                            value={formData.fullName}
-                            onChange={(e) => handleChange("fullName", e.target.value)}
-                            error={!!errors.fullName}
-                            helperText={errors.fullName}
+                            value={formData.nombre}
+                            onChange={(e) => handleChange("nombre", e.target.value)}
+                            error={!!errors.nombre}
+                            helperText={errors.nombre}
                             placeholder="Ingrese nombre y apellido"
                             sx={fieldStyles}
                         />
@@ -174,7 +203,6 @@ export default function UserForm() {
                         </Typography>
 
                         <TextField
-                            required
                             fullWidth
                             type="email"
                             value={formData.email}
@@ -193,18 +221,22 @@ export default function UserForm() {
 
                         <TextField
                             select
-                            required
                             fullWidth
-                            value={formData.role}
-                            onChange={(e) => handleChange("role", e.target.value)}
-                            error={!!errors.role}
-                            helperText={errors.role}
+                            value={formData.id_rol}
+                            onChange={(e) =>
+                                handleChange(
+                                    "id_rol",
+                                    e.target.value === "" ? "" : Number(e.target.value)
+                                )
+                            }
+                            error={!!errors.id_rol}
+                            helperText={errors.id_rol}
                             sx={fieldStyles}
                             slotProps={{
                                 select: {
                                     displayEmpty: true,
                                     renderValue: (selected) => {
-                                        if (!selected) {
+                                        if (selected === "") {
                                             return (
                                                 <span style={{ color: "#94A3B8" }}>
                                                     Seleccione un rol
@@ -212,17 +244,25 @@ export default function UserForm() {
                                             );
                                         }
 
-                                        return selected === "ADMINISTRADOR"
+                                        return selected === 1
                                             ? "Administrador"
                                             : "Funcionario";
                                     },
                                 },
                             }}
                         >
-                            <MenuItem value="ADMINISTRADOR">Administrador</MenuItem>
-                            <MenuItem value="FUNCIONARIO">Funcionario</MenuItem>
+                            <MenuItem value={1}>Administrador</MenuItem>
+                            <MenuItem value={2}>Funcionario</MenuItem>
                         </TextField>
                     </Box>
+
+                    {/* Mensaje de error del backend */}
+                    {submitError && (
+                        <Typography sx={{ color: "#D32F2F", fontSize: "0.875rem" }}>
+                            {submitError}
+                        </Typography>
+                    )}
+
 
                     {/* Botones */}
                     <Box
@@ -256,6 +296,7 @@ export default function UserForm() {
                         <Button
                             variant="contained"
                             type="submit"
+                            disabled={isSubmitting}
                             sx={{
                                 width: { xs: "100%", sm: "140px" },
                                 py: 1.2,
@@ -269,7 +310,7 @@ export default function UserForm() {
                                 },
                             }}
                         >
-                            Agregar
+                            {isSubmitting ? "Registrando..." : "Agregar"}
                         </Button>
                     </Box>
                 </Box>
