@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import useUserForm from "@/hooks/useUserForm";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
+import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 
 export default function UserForm() {
     const router = useRouter();
@@ -86,22 +87,6 @@ export default function UserForm() {
         }
     };
 
-    const fieldStyles = {
-        "& .MuiOutlinedInput-root": {
-            borderRadius: 4,
-            backgroundColor: "#FFFFFF",
-            "& fieldset": {
-                borderColor: "#DCE3EC",
-            },
-            "&:hover fieldset": {
-                borderColor: "#AABBD0",
-            },
-            "&.Mui-focused fieldset": {
-                borderColor: "#24476A",
-            },
-        },
-    };
-
     return (
         <Box sx={{ maxWidth: 780, mx: "auto", py: { xs: 2, md: 4 } }}>
             {/* Encabezado */}
@@ -136,10 +121,6 @@ export default function UserForm() {
                     >
                         Alta de usuario
                     </Typography>
-
-                    <Typography sx={{ color: "#64748B", fontSize: "0.95rem" }}>
-                        Complete los datos para registrar un nuevo usuario en el sistema.
-                    </Typography>
                 </Box>
             </Box>
 
@@ -154,16 +135,53 @@ export default function UserForm() {
                 }}
             >
                 {/* Encabezado de la tarjeta */}
-                <Box sx={{ px: { xs: 2.5, md: 4 }, py: 3 }}>
-                    <Typography
-                        sx={{ fontWeight: 700, color: "#263445", fontSize: "1.05rem" }}
-                    >
-                        Información del usuario
-                    </Typography>
+                <Box
+                    sx={{
+                        px: { xs: 2.5, md: 4 },
+                        py: 3,
+                        backgroundColor: "#F8FAFC",
+                    }}
+                >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Box
+                            sx={{
+                                width: 46,
+                                height: 46,
+                                borderRadius: 2.5,
+                                backgroundColor: "#E8F0FA",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                            }}
+                        >
+                            <PersonAddAlt1RoundedIcon
+                                sx={{ color: "#24476A", fontSize: 25 }}
+                            />
+                        </Box>
 
-                    <Typography sx={{ color: "#64748B", fontSize: "0.85rem", mt: 0.5 }}>
-                        Los campos marcados con * son obligatorios.
-                    </Typography>
+                        <Box>
+                            <Typography
+                                sx={{
+                                    fontWeight: 700,
+                                    color: "#263445",
+                                    fontSize: "1.05rem",
+                                }}
+                            >
+                                Información del usuario
+                            </Typography>
+
+                            <Typography
+                                sx={{
+                                    color: "#64748B",
+                                    fontSize: "0.85rem",
+                                    mt: 0.5,
+                                }}
+                            >
+                                Ingrese los datos de la persona que desea incorporar al sistema.
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Box>
 
                 <Divider sx={{ borderColor: "#E8EDF2" }} />
@@ -193,7 +211,6 @@ export default function UserForm() {
                             error={!!errors.nombre}
                             helperText={errors.nombre}
                             placeholder="Ingrese nombre y apellido"
-                            sx={fieldStyles}
                         />
                     </Box>
 
@@ -210,7 +227,6 @@ export default function UserForm() {
                             error={!!errors.email}
                             helperText={errors.email}
                             placeholder="usuario@ejemplo.com"
-                            sx={fieldStyles}
                         />
                     </Box>
 
@@ -231,7 +247,6 @@ export default function UserForm() {
                             }
                             error={!!errors.id_rol}
                             helperText={errors.id_rol}
-                            sx={fieldStyles}
                             slotProps={{
                                 select: {
                                     displayEmpty: true,
@@ -281,12 +296,12 @@ export default function UserForm() {
                                 width: { xs: "100%", sm: "140px" },
                                 py: 1.2,
                                 borderRadius: 3,
-                                textTransform: "none",
                                 color: "#475569",
-                                borderColor: "#CBD5E1",
+                                backgroundColor: "#F1F3F5",
+                                border: "1px solid #D8DEE6",
                                 "&:hover": {
-                                    borderColor: "#94A3B8",
-                                    backgroundColor: "#F8FAFC",
+                                    backgroundColor: "#E5E9EF",
+                                    borderColor: "#C5CDD8",
                                 },
                             }}
                         >
@@ -301,13 +316,7 @@ export default function UserForm() {
                                 width: { xs: "100%", sm: "140px" },
                                 py: 1.2,
                                 borderRadius: 3,
-                                textTransform: "none",
-                                backgroundColor: "#142D4E",
                                 boxShadow: "none",
-                                "&:hover": {
-                                    backgroundColor: "#24476A",
-                                    boxShadow: "none",
-                                },
                             }}
                         >
                             {isSubmitting ? "Registrando..." : "Agregar"}
@@ -406,13 +415,7 @@ export default function UserForm() {
                             borderRadius: 3,
                             px: 2,
                             py: 1.2,
-                            textTransform: "none",
-                            backgroundColor: "#142D4E",
                             boxShadow: "none",
-                            "&:hover": {
-                                backgroundColor: "#24476A",
-                                boxShadow: "none",
-                            },
                         }}
                     >
                         Entendido
