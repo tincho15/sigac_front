@@ -25,67 +25,18 @@ import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
 export default function UserForm() {
     const router = useRouter();
     const [successOpen, setSuccessOpen] = useState(false);
-    const [temporaryPassword, setTemporaryPassword] = useState("");
-    const [passwordCopied, setPasswordCopied] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState("");
 
-    const { formData, errors, handleChange, validateForm } = useUserForm();
-
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
-        if (!validateForm()) return;
-
-        setIsSubmitting(true);
-        setSubmitError("");
-
-        try {
-            const response = await fetch("/api/users", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: formData.email.trim(),
-                    nombre: formData.nombre.trim(),
-                    id_rol: formData.id_rol,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || data.error || "No se pudo registrar el usuario.");
-            }
-
-            setTemporaryPassword(data.password);
-            setPasswordCopied(false);
-            setSuccessOpen(true);
-
-        } catch (error) {
-            setSubmitError(
-                error instanceof Error
-                    ? error.message
-                    : "Ocurrió un error al registrar el usuario."
-            );
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleCopyPassword = async () => {
-        try {
-            await navigator.clipboard.writeText(temporaryPassword);
-            setPasswordCopied(true);
-
-            setTimeout(() => {
-                setPasswordCopied(false);
-            }, 2000);
-        } catch {
-            setPasswordCopied(false);
-        }
-    };
+    const {
+        formData,
+        errors,
+        isSubmitting,
+        submitError,
+        temporaryPassword,
+        passwordCopied,
+        handleChange,
+        handleSubmit,
+        handleCopyPassword,
+    } = useUserForm();
 
     return (
         <Box sx={{ maxWidth: 780, mx: "auto", py: { xs: 2, md: 4 } }}>
@@ -190,7 +141,15 @@ export default function UserForm() {
                 <Box
                     component="form"
                     noValidate
-                    onSubmit={handleSubmit}
+                    onSubmit={(event) => {
+                        event.preventDefault();
+
+                        handleSubmit().then((success) => {
+                            if (success) {
+                                setSuccessOpen(true);
+                            }
+                        });
+                    }}
                     sx={{
                         px: { xs: 2.5, md: 4 },
                         py: 4,
