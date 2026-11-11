@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "docker:build": "docker build -t sigac-front .", 
+    "docker:start": "docker run -d --rm --name sigac-front -p 3000:3000 sigac-front", 
+    "docker:stop": "docker stop sigac-front"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
