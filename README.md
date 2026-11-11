@@ -31,6 +31,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Docker
 
+##Usando con npm los siguientes comandos: 
+npm run docker:build 
+    Es lo mismo que ejecutar-> "docker build -t sigac-front ." 
+        --> Construye la imagen de Docker con el nombre "sigac-front"
+
+npm run docker:start 
+    Es lo mismo que ejecutar-> "docker run -d --rm --name sigac-front -p 3000:3000 sigac-front" 
+        --> Inicia un contenedor de Docker en segundo plano con el nombre "sigac-front" y mapea el puerto 3000 del contenedor al puerto 3000 del host
+
+npm run docker:stop 
+    Es lo mismo que ejecutar-> "docker stop sigac-front" 
+        ---> Detiene el contenedor de Docker con el nombre "sigac-front"
+
+
+
+
+
 Se necesita tener Docker instalado y en ejecución. La imagen de producción se construye con salida standalone de Next.js.
 
 Construir la imagen desde la raíz del proyecto:
