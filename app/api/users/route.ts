@@ -4,7 +4,13 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        const response = await fetch("http://localhost:3000/users", {
+        const backendUrl = process.env.BACKEND_URL;
+
+        if (!backendUrl) {
+            throw new Error("La variable BACKEND_URL no está configurada.");
+        }
+
+        const response = await fetch(`${backendUrl}/users`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
