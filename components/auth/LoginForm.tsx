@@ -18,6 +18,8 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthContext";
 
 export default function LoginForm() {
     const [email, setEmail] = useState("");
@@ -25,6 +27,8 @@ export default function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const router = useRouter();
+    const { login } = useAuth();
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -65,9 +69,16 @@ export default function LoginForm() {
                 return;
             }
 
-            if (data?.status !== "success" || !data?.token || !data?.user) {
+            if (data?.status !== "success" || !data?.user) {
                 setErrorMessage("El servidor devolvió una respuesta inesperada.");
                 return;
+            }
+            login(data.user);
+
+            if (data.user.debe_cambiar_password === true) {
+                router.push("/change-password");
+            } else {
+                router.push("/solicitudes");
             }
 
         } catch (error) {
