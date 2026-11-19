@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+    AUTH_COOKIE_NAME,
+    AUTH_COOKIE_OPTIONS,
+} from "@/config/authCookie";
 
 export async function POST(request: Request) {
     try {
@@ -21,9 +25,37 @@ export async function POST(request: Request) {
 
         const data = await response.json();
 
-        return NextResponse.json(data, {
+        if (!response.ok) {
+            return NextResponse.json(data, {
+                status: response.status,
+            });
+        }
+
+        if (
+            data?.status !== "success" ||
+            !data?.token ||
+            !data?.user
+        ) {
+            return NextResponse.json(
+                { message: "El servidor devolvió una respuesta inesperada." },
+                { status: 502 }
+            );
+        }
+
+        const { token, ...userData } = data;
+
+        const nextResponse = NextResponse.json(userData, {
             status: response.status,
         });
+
+        nextResponse.cookies.set(
+            AUTH_COOKIE_NAME,
+            token,
+            AUTH_COOKIE_OPTIONS
+        );
+
+        return nextResponse;
+
     } catch (error) {
         console.error("Error al comunicarse con el Gateway:", error);
 
