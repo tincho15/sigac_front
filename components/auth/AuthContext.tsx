@@ -34,7 +34,7 @@ type AuthContextType = {
     login: (user: AuthUser) => void;
     logout: () => void;
     updateUser: (user: AuthUser) => void;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [status, setStatus] = useState<AuthStatus>("loading");
     const [isRetrying, setIsRetrying] = useState(false);
 
-    const refreshUser = useCallback(async () => {
+    const refreshUser = useCallback(async (): Promise<boolean> => {
         setIsRetrying(true);
 
         try {
@@ -60,13 +60,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (response.status === 401) {
                 setUser(null);
                 setStatus("unauthenticated");
-                return;
+                return false;
             }
 
             if (!response.ok) {
                 setUser(null);
                 setStatus("error");
-                return;
+                return false;
             }
 
             const data = await response.json();
@@ -74,16 +74,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
             if (data?.status !== "success" || !data?.user) {
                 setUser(null);
                 setStatus("error");
-                return;
+                return false;
             }
 
             setUser(data.user);
             setStatus("authenticated");
 
+            return true;
         } catch (error) {
             console.error("Error al recuperar la sesión:", error);
             setUser(null);
             setStatus("error");
+            return false;
         } finally {
             setIsRetrying(false);
         }
