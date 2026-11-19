@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -13,6 +14,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -139,11 +141,17 @@ export default function ChangePasswordForm() {
         </InputAdornment>
     );
 
+    const passwordFieldIcon = (
+        <InputAdornment position="start">
+            <LockOutlinedIcon color="action" fontSize="small" />
+        </InputAdornment>
+    );
+
     return (
         <Paper
             elevation={0}
             sx={{
-                p: { xs: 3, sm: 4 },
+                p: { xs: 3, sm: 4.5 },
                 border: 1,
                 borderColor: "divider",
                 borderRadius: 3,
@@ -152,14 +160,24 @@ export default function ChangePasswordForm() {
         >
             <Box sx={{ mb: 4 }}>
                 <Typography
-                    variant="h5"
+                    variant="h4"
                     color="primary"
-                    sx={{ fontWeight: 700, mb: 1 }}
+                    sx={{
+                        fontWeight: 700,
+                        mb: 1.2,
+                        fontSize: { xs: "1.6rem", sm: "1.9rem" },
+                    }}
                 >
                     Cambio de contraseña
                 </Typography>
 
-                <Typography color="text.secondary" sx={{ fontSize: "0.875rem" }}>
+                <Typography
+                    sx={{
+                        color: "text.secondary",
+                        fontSize: "0.95rem",
+                        lineHeight: 1.6,
+                    }}
+                >
                     {isMandatory
                         ? "Para continuar, necesitás establecer una nueva contraseña."
                         : "Ingresá tu contraseña actual y elegí una nueva."}
@@ -175,14 +193,15 @@ export default function ChangePasswordForm() {
                 {!isMandatory && (
                     <TextField
                         fullWidth
-                        label="Contraseña actual"
                         type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(event) => setCurrentPassword(event.target.value)}
+                        placeholder="Contraseña actual"
                         disabled={loading}
                         autoComplete="current-password"
                         slotProps={{
                             input: {
+                                startAdornment: passwordFieldIcon,
                                 endAdornment: passwordAdornment(
                                     showCurrentPassword,
                                     () => setShowCurrentPassword(!showCurrentPassword)
@@ -194,14 +213,15 @@ export default function ChangePasswordForm() {
 
                 <TextField
                     fullWidth
-                    label="Nueva contraseña"
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(event) => setNewPassword(event.target.value)}
+                    placeholder="Nueva contraseña"
                     disabled={loading}
                     autoComplete="new-password"
                     slotProps={{
                         input: {
+                            startAdornment: passwordFieldIcon,
                             endAdornment: passwordAdornment(
                                 showNewPassword,
                                 () => setShowNewPassword(!showNewPassword)
@@ -212,14 +232,15 @@ export default function ChangePasswordForm() {
 
                 <TextField
                     fullWidth
-                    label="Confirmar nueva contraseña"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="Confirmar nueva contraseña"
                     disabled={loading}
                     autoComplete="new-password"
                     slotProps={{
                         input: {
+                            startAdornment: passwordFieldIcon,
                             endAdornment: passwordAdornment(
                                 showConfirmPassword,
                                 () => setShowConfirmPassword(!showConfirmPassword)
@@ -243,6 +264,7 @@ export default function ChangePasswordForm() {
                         borderRadius: 2,
                         boxShadow: "none",
                         fontWeight: 600,
+                        fontSize: "0.95rem",
                     }}
                 >
                     {loading ? (

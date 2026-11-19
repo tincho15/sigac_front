@@ -1,3 +1,4 @@
+
 import { Box } from "@mui/material";
 import ChangePasswordForm from "./ChangePasswordForm";
 
@@ -13,7 +14,7 @@ export default function ChangePasswordLayout() {
                 p: { xs: 2, sm: 4 },
             }}
         >
-            <Box sx={{ width: "100%", maxWidth: 480 }}>
+            <Box sx={{ width: "100%", maxWidth: 500, mx: "auto" }}>
                 <ChangePasswordForm />
             </Box>
         </Box>
