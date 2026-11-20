@@ -3,9 +3,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthContext";
+import type { Rol } from "@/utils/constants";
 
 type RoleGuardProps = {
-    allowedRoles: string[];
+    allowedRoles: Rol[];
     children: React.ReactNode;
 };
 
@@ -17,7 +18,7 @@ export default function RoleGuard({
     const router = useRouter();
 
     const hasPermission = user
-        ? allowedRoles.includes(user.rol.nombre)
+        ? (allowedRoles as string[]).includes(user.rol.nombre)
         : false;
 
     useEffect(() => {
