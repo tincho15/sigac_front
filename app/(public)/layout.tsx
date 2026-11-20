@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthContext";
 import AuthLoading from "@/components/auth/AuthLoading";
+import { getLandingPath } from "@/lib/auth/redirects";
 
 export default function PublicLayout({
     children,
@@ -15,11 +16,7 @@ export default function PublicLayout({
 
     useEffect(() => {
         if (status === "authenticated" && user) {
-            if (user.debe_cambiar_password) {
-                router.replace("/change-password");
-            } else {
-                router.replace("/solicitudes");
-            }
+            router.replace(getLandingPath(user));
         }
     }, [status, user, router]);
 
