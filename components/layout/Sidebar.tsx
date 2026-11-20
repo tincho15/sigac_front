@@ -22,6 +22,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import LogoutIcon from "@mui/icons-material/Logout";
 
 import { useAuth } from "@/components/auth/AuthContext";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
 const navigationItems = [
     { label: "Dashboard", path: "/dashboard", icon: DashboardIcon },
@@ -39,6 +40,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
     const { user, logout } = useAuth();
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
 
     const handleLogout = async () => {
         if (isLoggingOut) return;
@@ -50,6 +52,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
         } catch (error) {
             console.error("Error al cerrar la sesión:", error);
         } finally {
+            setOpenLogoutDialog(false);
             router.replace("/login");
             onNavigate?.();
         }
@@ -105,10 +108,12 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                     <Typography sx={{ fontWeight: 700 }}>
                         SIGAC
                     </Typography>
+
                     <Typography
                         sx={{
                             fontSize: "0.7rem",
-                            color: alpha("#FFFFFF", 0.65),
+                            color: (theme) =>
+                                alpha(theme.palette.primary.contrastText, 0.65),
                         }}
                     >
                         Archivo Central
@@ -123,14 +128,22 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                     mb: 1.5,
                     fontSize: "0.7rem",
                     fontWeight: 700,
-                    color: alpha("#FFFFFF", 0.55),
+                    color: (theme) =>
+                        alpha(theme.palette.primary.contrastText, 0.55),
                     letterSpacing: 1.2,
                 }}
             >
                 MENÚ PRINCIPAL
             </Typography>
 
-            <List disablePadding sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <List
+                disablePadding
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                }}
+            >
                 {navigationItems.map(({ label, path, icon: Icon }) => {
                     const isActive =
                         pathname === path || pathname.startsWith(`${path}/`);
@@ -147,7 +160,8 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                                 px: 2,
                                 py: 1.5,
                                 borderRadius: 2,
-                                color: alpha("#FFFFFF", 0.72),
+                                color: (theme) =>
+                                    alpha(theme.palette.primary.contrastText, 0.72),
                                 "& .MuiListItemIcon-root": {
                                     minWidth: "auto",
                                     color: "inherit",
@@ -163,7 +177,8 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                                     bgcolor: "primary.light",
                                 },
                                 "&:hover": {
-                                    bgcolor: alpha("#FFFFFF", 0.08),
+                                    bgcolor: (theme) =>
+                                        alpha(theme.palette.primary.contrastText, 0.08),
                                     color: "primary.contrastText",
                                 },
                             }}
@@ -181,14 +196,15 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             {/* Cerrar sesión */}
             <List disablePadding sx={{ mt: "auto" }}>
                 <ListItemButton
-                    onClick={() => void handleLogout()}
+                    onClick={() => setOpenLogoutDialog(true)}
                     disabled={isLoggingOut}
                     sx={{
                         gap: 1.5,
                         px: 2,
                         py: 1.5,
                         borderRadius: 2,
-                        color: alpha("#FFFFFF", 0.72),
+                        color: (theme) =>
+                            alpha(theme.palette.primary.contrastText, 0.72),
                         "& .MuiListItemIcon-root": {
                             minWidth: "auto",
                             color: "inherit",
@@ -197,7 +213,8 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                             fontSize: "0.9rem",
                         },
                         "&:hover": {
-                            bgcolor: alpha("#FFFFFF", 0.08),
+                            bgcolor: (theme) =>
+                                alpha(theme.palette.primary.contrastText, 0.08),
                             color: "primary.contrastText",
                         },
                     }}
@@ -210,10 +227,22 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                 </ListItemButton>
             </List>
 
+            {/* Diálogo de confirmación */}
+            <ConfirmDialog
+                open={openLogoutDialog}
+                title="¿Cerrar sesión?"
+                description="¿Estás seguro de que deseas cerrar tu sesión?"
+                confirmText="Cerrar sesión"
+                onConfirm={() => void handleLogout()}
+                onCancel={() => setOpenLogoutDialog(false)}
+                loading={isLoggingOut}
+            />
+
             {/* Cuenta */}
             <Box
                 sx={{
-                    borderTop: `1px solid ${alpha("#FFFFFF", 0.15)}`,
+                    borderTop: (theme) =>
+                        `1px solid ${alpha(theme.palette.primary.contrastText, 0.15)}`,
                     pt: 2,
                     mt: 1,
                     display: "flex",
@@ -238,13 +267,19 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                 </Box>
 
                 <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: "0.85rem", fontWeight: 600 }} noWrap>
+                    <Typography
+                        sx={{ fontSize: "0.85rem", fontWeight: 600 }}
+                        noWrap
+                    >
                         {user?.nombre ?? "Usuario"}
                     </Typography>
 
                     <Typography
-                        sx={{ fontSize: "0.7rem" }}
-                        color={alpha("#FFFFFF", 0.65)}
+                        sx={{
+                            fontSize: "0.7rem",
+                            color: (theme) =>
+                                alpha(theme.palette.primary.contrastText, 0.65),
+                        }}
                         noWrap
                     >
                         {user?.rol.nombre ?? "Cuenta activa"}
