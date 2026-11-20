@@ -1,67 +1,50 @@
 import { NextResponse } from "next/server";
+import { AUTH_COOKIE_NAME, TWO_FACTOR_COOKIE_NAME } from "@/config/authCookie";
 import {
-    AUTH_COOKIE_NAME,
-    AUTH_COOKIE_OPTIONS,
-} from "@/config/authCookie";
+    callBackend,
+    clearCookie,
+    gatewayUnavailable,
+    setSessionCookie,
+    setTwoFactorCookie,
+} from "@/lib/auth/session";
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-
-        const backendUrl = process.env.BACKEND_URL;
-
-        if (!backendUrl) {
-            throw new Error("La variable BACKEND_URL no está configurada.");
-        }
-
-        const response = await fetch(`${backendUrl}/auth/login`, {
+        const { status, data } = await callBackend("/auth/login", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-            cache: "no-store",
+            body,
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            return NextResponse.json(data, {
-                status: response.status,
-            });
+        if (status < 200 || status >= 300) {
+            return NextResponse.json(data, { status });
         }
 
-        if (
-            data?.status !== "success" ||
-            !data?.token ||
-            !data?.user
-        ) {
+        // Usuario con 2FA: el token intermedio queda en una cookie httpOnly
+        // y el navegador solo se entera de que tiene que pedir el codigo
+        if (data?.status === "2fa_required" && data?.tempToken) {
+            const response = NextResponse.json({ status: "2fa_required" });
+            setTwoFactorCookie(response, data.tempToken);
+            clearCookie(response, AUTH_COOKIE_NAME);
+            return response;
+        }
+
+        if (data?.status !== "success" || !data?.token || !data?.user) {
             return NextResponse.json(
                 { message: "El servidor devolvió una respuesta inesperada." },
                 { status: 502 }
             );
         }
 
+        // El JWT queda en la cookie de sesion; al navegador solo le llegan los datos del usuario
         const { token, ...userData } = data;
 
-        const nextResponse = NextResponse.json(userData, {
-            status: response.status,
-        });
+        const response = NextResponse.json(userData, { status });
+        setSessionCookie(response, token);
+        clearCookie(response, TWO_FACTOR_COOKIE_NAME);
 
-        nextResponse.cookies.set(
-            AUTH_COOKIE_NAME,
-            token,
-            AUTH_COOKIE_OPTIONS
-        );
-
-        return nextResponse;
-
+        return response;
     } catch (error) {
-        console.error("Error al comunicarse con el Gateway:", error);
-
-        return NextResponse.json(
-            { message: "No se pudo conectar con el servidor." },
-            { status: 502 }
-        );
+        return gatewayUnavailable(error);
     }
 }

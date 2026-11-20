@@ -9,11 +9,13 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import PeopleIcon from "@mui/icons-material/People";
 import LogoutIcon from "@mui/icons-material/Logout";
+import SecurityIcon from "@mui/icons-material/Security";
 
 const menuItems = [
     { label: "Dashboard", path: "/dashboard", icon: <DashboardIcon /> },
     { label: "Solicitudes", path: "/solicitudes", icon: <AssignmentIcon /> },
     { label: "Usuarios", path: "/usuarios", icon: <PeopleIcon /> },
+    { label: "Seguridad", path: "/cuenta/seguridad", icon: <SecurityIcon /> },
     { label: "Cerrar sesión", path: "/logout", icon: <LogoutIcon /> },
 ];
 

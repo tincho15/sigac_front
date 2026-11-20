@@ -19,9 +19,12 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth/AuthContext";
+import { useAuth, type AuthUser } from "@/components/auth/AuthContext";
+import { getLandingPath } from "@/lib/auth/redirects";
+import TwoFactorLoginStep from "./TwoFactorLoginStep";
 
 export default function LoginForm() {
+    const [step, setStep] = useState<"credentials" | "twoFactor">("credentials");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +32,13 @@ export default function LoginForm() {
     const [errorMessage, setErrorMessage] = useState("");
     const router = useRouter();
     const { login } = useAuth();
+
+    // Se usa tanto tras la contraseña (sin 2FA) como tras el código de Google Authenticator
+    // Lleva al paso obligatorio pendiente (cambio de contraseña o activación del 2FA) o al inicio
+    const completeLogin = (user: AuthUser) => {
+        login(user);
+        router.push(getLandingPath(user));
+    };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -69,17 +79,19 @@ export default function LoginForm() {
                 return;
             }
 
+            // La cuenta tiene 2FA activo: se pide el codigo de Google Authenticator
+            if (data?.status === "2fa_required") {
+                setPassword("");
+                setStep("twoFactor");
+                return;
+            }
+
             if (data?.status !== "success" || !data?.user) {
                 setErrorMessage("El servidor devolvió una respuesta inesperada.");
                 return;
             }
-            login(data.user);
 
-            if (data.user.debe_cambiar_password === true) {
-                router.push("/change-password");
-            } else {
-                router.push("/solicitudes");
-            }
+            completeLogin(data.user);
 
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
@@ -107,6 +119,16 @@ export default function LoginForm() {
                     boxShadow: "0 4px 18px rgba(20, 45, 78, 0.06)",
                 }}
             >
+                {step === "twoFactor" ? (
+                    <TwoFactorLoginStep
+                        onSuccess={completeLogin}
+                        onCancel={(message) => {
+                            setErrorMessage(message ?? "");
+                            setStep("credentials");
+                        }}
+                    />
+                ) : (
+                <>
                 <Box sx={{ mb: 4 }}>
                     <Typography
                         variant="h5"
@@ -223,6 +245,8 @@ export default function LoginForm() {
                         </Link>
                     </Box>
                 </Box>
+                </>
+                )}
             </Paper>
         </Box>
     );
