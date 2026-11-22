@@ -1,35 +1,21 @@
 import { NextResponse } from "next/server";
+import { proxyToBackend } from "@/lib/backendProxy";
 
+// Listar usuarios
+export async function GET() {
+    return proxyToBackend("/users", { method: "GET" });
+}
+
+// Crear usuario
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
+    const body = await request.json().catch(() => null);
 
-        const backendUrl = process.env.BACKEND_URL;
-
-        if (!backendUrl) {
-            throw new Error("La variable BACKEND_URL no está configurada.");
-        }
-
-        const response = await fetch(`${backendUrl}/users`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-            cache: "no-store",
-        });
-
-        const data = await response.json();
-
-        return NextResponse.json(data, {
-            status: response.status,
-        });
-    } catch (error) {
-        console.error("Error al comunicarse con el Gateway:", error);
-
+    if (body === null) {
         return NextResponse.json(
-            { message: "No se pudo conectar con el servidor." },
-            { status: 502 }
+            { status: "error", message: "El cuerpo de la solicitud no es válido." },
+            { status: 400 }
         );
     }
+
+    return proxyToBackend("/users", { method: "POST", body });
 }

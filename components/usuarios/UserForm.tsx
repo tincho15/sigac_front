@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useUserForm from "@/hooks/useUserForm";
+import { ROLE_OPTIONS, getRoleName } from "@/utils/constants";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import ContentCopyRoundedIcon from "@mui/icons-material/ContentCopyRounded";
 import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
@@ -218,15 +219,16 @@ export default function UserForm() {
                                             );
                                         }
 
-                                        return selected === 1
-                                            ? "Administrador"
-                                            : "Funcionario";
+                                        return getRoleName(Number(selected));
                                     },
                                 },
                             }}
                         >
-                            <MenuItem value={1}>Administrador</MenuItem>
-                            <MenuItem value={2}>Funcionario</MenuItem>
+                            {ROLE_OPTIONS.map((rol) => (
+                                <MenuItem key={rol.id_rol} value={rol.id_rol}>
+                                    {rol.nombre}
+                                </MenuItem>
+                            ))}
                         </TextField>
                     </Box>
 
