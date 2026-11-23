@@ -9,6 +9,7 @@ import {
     useState,
     type ReactNode,
 } from "react";
+import { logout as logoutService } from "@/services/auth/authService";
 
 export type AuthUser = {
     id_usuario: number;
@@ -32,7 +33,7 @@ type AuthContextType = {
     status: AuthStatus;
     isRetrying: boolean;
     login: (user: AuthUser) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
     updateUser: (user: AuthUser) => void;
     refreshUser: () => Promise<boolean>;
 };
@@ -130,9 +131,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setStatus("authenticated");
     };
 
-    const logout = () => {
-        setUser(null);
-        setStatus("unauthenticated");
+    const logout = async () => {
+        try {
+            await logoutService();
+        } finally {
+            setUser(null);
+            setStatus("unauthenticated");
+        }
     };
 
     const updateUser = (user: AuthUser) => {
