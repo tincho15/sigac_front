@@ -17,7 +17,7 @@ export default function RoleGuard({
     const router = useRouter();
 
     const hasPermission = user
-        ? allowedRoles.includes(user.rol.nombre)
+        ? allowedRoles.includes(user.rol.nombre.toUpperCase())
         : false;
 
     useEffect(() => {

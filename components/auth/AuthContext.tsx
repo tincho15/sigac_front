@@ -34,8 +34,13 @@ type AuthContextType = {
     login: (user: AuthUser) => void;
     logout: () => void;
     updateUser: (user: AuthUser) => void;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<boolean>;
 };
+
+type SessionResult =
+    | { status: "authenticated"; user: AuthUser }
+    | { status: "unauthenticated" }
+    | { status: "error" };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -48,9 +53,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [status, setStatus] = useState<AuthStatus>("loading");
     const [isRetrying, setIsRetrying] = useState(false);
 
-    const refreshUser = useCallback(async () => {
-        setIsRetrying(true);
-
+    // Consulta los datos de la sesión sin modificar estados.
+    const fetchCurrentUser = useCallback(async (): Promise<SessionResult> => {
         try {
             const response = await fetch("/api/auth/me", {
                 method: "GET",
@@ -58,40 +62,68 @@ export function AuthProvider({ children }: AuthProviderProps) {
             });
 
             if (response.status === 401) {
-                setUser(null);
-                setStatus("unauthenticated");
-                return;
+                return { status: "unauthenticated" };
             }
 
             if (!response.ok) {
-                setUser(null);
-                setStatus("error");
-                return;
+                return { status: "error" };
             }
 
             const data = await response.json();
 
             if (data?.status !== "success" || !data?.user) {
-                setUser(null);
-                setStatus("error");
-                return;
+                return { status: "error" };
             }
 
-            setUser(data.user);
-            setStatus("authenticated");
-
+            return {
+                status: "authenticated",
+                user: data.user,
+            };
         } catch (error) {
             console.error("Error al recuperar la sesión:", error);
-            setUser(null);
-            setStatus("error");
-        } finally {
-            setIsRetrying(false);
+            return { status: "error" };
         }
     }, []);
 
+    // Recupera y actualiza los datos del usuario autenticado.
+    const refreshUser = useCallback(async (): Promise<boolean> => {
+        setIsRetrying(true);
+
+        try {
+            const result = await fetchCurrentUser();
+
+            setUser(
+                result.status === "authenticated" ? result.user : null
+            );
+            setStatus(result.status);
+
+            return result.status === "authenticated";
+        } finally {
+            setIsRetrying(false);
+        }
+    }, [fetchCurrentUser]);
+
+    // Recuperación automática de sesión al iniciar la aplicación.
     useEffect(() => {
-        refreshUser();
-    }, [refreshUser]);
+        let isMounted = true;
+
+        const initializeSession = async () => {
+            const result = await fetchCurrentUser();
+
+            if (!isMounted) return;
+
+            setUser(
+                result.status === "authenticated" ? result.user : null
+            );
+            setStatus(result.status);
+        };
+
+        void initializeSession();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [fetchCurrentUser]);
 
     const login = (user: AuthUser) => {
         setUser(user);
