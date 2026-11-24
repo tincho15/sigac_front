@@ -3,25 +3,27 @@ import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/config/authCookie";
 
 export async function GET() {
+    // Obtener la cookie de autenticación.
+    // Se deja fuera del try/catch para que Next.js
+    // pueda gestionar correctamente el prerenderizado.
+    const cookieStore = await cookies();
+    const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+
+    if (!token) {
+        return NextResponse.json(
+            { status: "error", message: "No hay una sesión activa." },
+            { status: 401 }
+        );
+    }
+
     try {
-        // Obtener la cookie de autenticación
-        const cookieStore = await cookies();
-        const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
-
-        if (!token) {
-            return NextResponse.json(
-                { status: "error", message: "No hay una sesión activa." },
-                { status: 401 }
-            );
-        }
-
         const backendUrl = process.env.BACKEND_URL;
 
         if (!backendUrl) {
             throw new Error("La variable BACKEND_URL no está configurada.");
         }
 
-        // Consultar los datos del usuario autenticado
+        // Consultar los datos del usuario autenticado.
         const response = await fetch(`${backendUrl}/auth/me`, {
             method: "GET",
             headers: {
@@ -32,7 +34,7 @@ export async function GET() {
 
         const data = await response.json().catch(() => null);
 
-        // Si el backend rechaza el token, limpiar la cookie
+        // Si el backend rechaza el token, limpiar la cookie.
         if (response.status === 401) {
             const nextResponse = NextResponse.json(
                 data ?? {
@@ -73,7 +75,6 @@ export async function GET() {
                 "Cache-Control": "no-store",
             },
         });
-
     } catch (error) {
         console.error("Error al recuperar la sesión:", error);
 

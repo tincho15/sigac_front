@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthContext";
 import AuthLoading from "@/components/auth/AuthLoading";
+import MainLayout from "@/components/layout/MainLayout";
 import { HOME_PATH, MANDATORY_PATHS, getRequiredPath } from "@/lib/auth/redirects";
 
 export default function PrivateLayout({
@@ -68,5 +69,9 @@ export default function PrivateLayout({
         return null;
     }
 
-    return <>{children}</>;
+    return (
+        <MainLayout>
+            {children}
+        </MainLayout>
+    );
 }
