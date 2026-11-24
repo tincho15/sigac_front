@@ -20,6 +20,15 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Sesión y verificación en dos pasos (Google Authenticator)
+
+- Los Route Handlers de `app/api/auth/` reenvían las solicitudes al backend (`BACKEND_URL`) y guardan los JWT en cookies `httpOnly` (`sigac_session` para la sesión, `sigac_2fa` para el paso intermedio del login). Los nombres y opciones están en `config/authCookie.ts` y la lógica compartida en `lib/auth/session.ts`.
+- Si la cuenta tiene 2FA activo, `components/auth/LoginForm.tsx` pasa al paso `TwoFactorLoginStep`, que pide el código de 6 dígitos; al validarlo se completa el login en el `AuthContext` igual que sin 2FA.
+- **2FA obligatoria:** mientras `user.debe_activar_2fa` sea `true`, el layout privado solo deja estar en `/activar-2fa` (`app/(private)/activar-2fa`, sin menú lateral). Al activarlo se refresca el `AuthContext` y el usuario pasa a `/solicitudes`. En el primer login de un usuario nuevo el orden es `/change-password` → `/activar-2fa` → `/solicitudes`; las reglas están en `lib/auth/redirects.ts`.
+- La pantalla privada `/cuenta/seguridad` (`app/(private)/cuenta/seguridad`, menú **Seguridad**) muestra el estado del 2FA y permite desactivarlo con contraseña + código. Como es obligatorio, después de desactivarlo se vuelve a pedir la activación (sirve para cambiar de celular).
+
+La guía completa de configuración y uso está en el README del backend (`sigac_gateway`), sección **Autenticacion de dos factores**.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

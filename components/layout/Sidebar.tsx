@@ -20,6 +20,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import PeopleIcon from "@mui/icons-material/People";
 import LogoutIcon from "@mui/icons-material/Logout";
+import SecurityIcon from "@mui/icons-material/Security";
 
 import { useAuth } from "@/components/auth/AuthContext";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
@@ -28,6 +29,7 @@ const navigationItems = [
     { label: "Dashboard", path: "/dashboard", icon: DashboardIcon },
     { label: "Solicitudes", path: "/solicitudes", icon: AssignmentIcon },
     { label: "Usuarios", path: "/usuarios", icon: PeopleIcon },
+    { label: "Seguridad", path: "/cuenta/seguridad", icon: SecurityIcon },
 ];
 
 type SidebarProps = {

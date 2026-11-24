@@ -16,6 +16,8 @@ export type AuthUser = {
     nombre: string;
     email: string;
     debe_cambiar_password: boolean;
+    // 2FA obligatoria: true mientras el usuario no haya activado Google Authenticator
+    debe_activar_2fa: boolean;
     rol: {
         id_rol: number;
         nombre: string;

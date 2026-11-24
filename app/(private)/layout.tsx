@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthContext";
 import AuthLoading from "@/components/auth/AuthLoading";
 import MainLayout from "@/components/layout/MainLayout";
+import { HOME_PATH, MANDATORY_PATHS, getRequiredPath } from "@/lib/auth/redirects";
 
 export default function PrivateLayout({
     children,
@@ -16,7 +17,18 @@ export default function PrivateLayout({
     const router = useRouter();
     const pathname = usePathname();
 
-    const isChangePasswordPage = pathname === "/change-password";
+    // Paso obligatorio pendiente: cambio de contraseña y/o activación del 2FA
+    const requiredPath = user ? getRequiredPath(user) : null;
+    const isMandatoryPage = MANDATORY_PATHS.includes(pathname);
+
+    // Con un paso pendiente solo se puede estar en su página;
+    // sin pasos pendientes no se puede entrar a esas páginas.
+    const redirectTo =
+        requiredPath && pathname !== requiredPath
+            ? requiredPath
+            : !requiredPath && isMandatoryPage
+                ? HOME_PATH
+                : null;
 
     useEffect(() => {
         if (status === "unauthenticated") {
@@ -24,27 +36,10 @@ export default function PrivateLayout({
             return;
         }
 
-        // Si debe cambiar la contraseña, debe ir a esa página.
-        if (
-            status === "authenticated" &&
-            user?.debe_cambiar_password &&
-            !isChangePasswordPage
-        ) {
-            router.replace("/change-password");
-            return;
+        if (status === "authenticated" && redirectTo) {
+            router.replace(redirectTo);
         }
-
-        // Si no debe cambiarla, no puede acceder a esa página.
-        if (
-            status === "authenticated" &&
-            user &&
-            !user.debe_cambiar_password &&
-            isChangePasswordPage
-        ) {
-            router.replace("/solicitudes");
-            return;
-        }
-    }, [status, user, isChangePasswordPage, router]);
+    }, [status, redirectTo, router]);
 
     if (status === "loading") {
         return <AuthLoading />;
@@ -70,17 +65,7 @@ export default function PrivateLayout({
         return null;
     }
 
-    if (
-        user.debe_cambiar_password &&
-        !isChangePasswordPage
-    ) {
-        return null;
-    }
-
-    if (
-        !user.debe_cambiar_password &&
-        isChangePasswordPage
-    ) {
+    if (redirectTo) {
         return null;
     }
 
