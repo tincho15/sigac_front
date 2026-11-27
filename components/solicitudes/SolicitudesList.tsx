@@ -17,9 +17,8 @@ import { useAuth } from "@/components/auth/AuthContext";
 import SolicitudesTable from "@/components/solicitudes/SolicitudesTable";
 import useSolicitudes from "@/hooks/useSolicitudes";
 import { ROLES } from "@/config/roles";
-
 // Formulario de alta (T-24). Solo el administrador ingresa solicitudes (CU-06).
-const NEW_SOLICITUD_PATH = "/solicitudes/nueva";
+import { NEW_SOLICITUD_PATH } from "@/config/solicitudes";
 
 export default function SolicitudesList() {
     const { user } = useAuth();
