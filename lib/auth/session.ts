@@ -62,11 +62,44 @@ export function gatewayUnavailable(error: unknown) {
     );
 }
 
+type ProxyOptions = {
+    // Roles (nombre tal como lo devuelve el backend) habilitados para la operación.
+    // El backend también lo verifica; acá se corta antes de reenviar la solicitud.
+    allowedRoles?: readonly string[];
+};
+
+// Comprueba el rol del usuario autenticado. Devuelve la respuesta de error a
+// enviar al cliente, o null si el usuario tiene permiso.
+async function checkRole(token: string, allowedRoles: readonly string[]) {
+    const { status, data } = await callBackend("/auth/me", { token });
+
+    if (status === 401) {
+        const response = NextResponse.json(
+            { status: "error", message: "La sesión no es válida o ha expirado." },
+            { status: 401 }
+        );
+        clearCookie(response, AUTH_COOKIE_NAME);
+        return response;
+    }
+
+    const rol: unknown = data?.user?.rol?.nombre;
+
+    if (status !== 200 || typeof rol !== "string" || !allowedRoles.includes(rol)) {
+        return NextResponse.json(
+            { status: "error", message: "No tenés permisos para realizar esta operación." },
+            { status: 403 }
+        );
+    }
+
+    return null;
+}
+
 // Reenvia una solicitud autenticada al backend usando el JWT de la cookie de sesion
 export async function proxyAuthenticated(
     request: NextRequest,
     path: string,
-    method: "GET" | "POST" = "GET"
+    method: "GET" | "POST" = "GET",
+    { allowedRoles }: ProxyOptions = {}
 ) {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
@@ -78,6 +111,14 @@ export async function proxyAuthenticated(
     }
 
     try {
+        if (allowedRoles) {
+            const forbidden = await checkRole(token, allowedRoles);
+
+            if (forbidden) {
+                return forbidden;
+            }
+        }
+
         const body = method === "POST" ? await request.json().catch(() => ({})) : undefined;
 
         // Reenviar los query params de la solicitud original al backend.
