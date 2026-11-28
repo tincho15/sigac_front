@@ -79,14 +79,22 @@ export async function proxyAuthenticated(
 
     try {
         const body = method === "POST" ? await request.json().catch(() => ({})) : undefined;
-        const { status, data } = await callBackend(path, { method, body, token });
+
+        // Reenviar los query params de la solicitud original al backend.
+        const searchParams = request.nextUrl.searchParams.toString();
+        const backendPath = searchParams ? `${path}?${searchParams}` : path;
+
+        const { status, data } = await callBackend(backendPath, {
+            method,
+            body,
+            token,
+        });
 
         const response = NextResponse.json(data, {
             status,
             headers: { "Cache-Control": "no-store" },
         });
 
-        // Igual que /api/auth/me: si el backend rechaza el token, se limpia la cookie
         if (status === 401) {
             clearCookie(response, AUTH_COOKIE_NAME);
         }
